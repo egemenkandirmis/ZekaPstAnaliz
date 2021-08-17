@@ -11,7 +11,7 @@ namespace MailBackupSystem
     class Program
     {
 
-        private static string path = @"C:\Users\kandi\Desktop\SamplePST\Export\";
+        private static string path = @"C:\Users\kandi\Desktop\SamplePST\$$$$$\";
         //private static string path = @"C:\Users\kandi\Desktop\SamplePST\Export\";
         private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\yahya.kisioglu.pst";
         //private static static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\archive.pst";

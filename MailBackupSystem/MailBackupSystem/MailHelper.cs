@@ -49,14 +49,36 @@ namespace MailBackupSystem
             foreach (var mail in folder.EnumerateOutlookItem())
             {
                 var path = Path.Combine(recordFolderName, mail.GetHashCode().ToString());
+                if (mail.DisplayTo == null)
+                    continue;
+                SeperateMail(mail, recordFolderName, mail.DisplayTo, "yahya.kisioglu@zafer.gov", "gov");
+                SeperateMail(mail, recordFolderName, mail.DisplayTo, "yahya.kisioglu@zafer.org", "org");
 
-                ValidFolder(recordFolderName);
-                // MailYazdir(mail, path);
-                MailKaydet(mail, recordFolderName);
-                //  EklentiKaydet(mail, path);
+                if (mail.DisplayCc == null)
+                    continue;
+                SeperateMail(mail, recordFolderName, mail.DisplayCc, "yahya.kisioglu@zafer.gov", "govCc");
+                SeperateMail(mail, recordFolderName, mail.DisplayCc, "yahya.kisioglu@zafer.org", "orgCc");
+
+
+                if (mail.DisplayBcc == null)
+                    continue;
+                SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.gov", "govBcc");
+                SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.org", "orgBcc");
+
             }
         }
 
+        public void SeperateMail(OutlookItem mail, string recordFolderName, string contains1, string contains2, string replaceWith)
+        {
+            if (contains1.ToLower().Contains(contains2))
+            {
+                var pathGov = recordFolderName.Replace("$$$$$", replaceWith);
+                ValidFolder(pathGov);
+                // MailYazdir(mail, path);
+                MailKaydet(mail, pathGov);
+                //  EklentiKaydet(mail, path);
+            }
+        }
         public void MailYazdir(OutlookItem outlookItem, string recordFolderName)
         {
             var icerik = $@"{outlookItem.DeliveryTime}ß{outlookItem.SenderEmailAddress}ß{outlookItem.Subject}ß{outlookItem.DisplayName}ß{outlookItem.DisplayTo}ß{outlookItem.DisplayBcc}ß{outlookItem.DisplayCc}ß{outlookItem.Body}";
