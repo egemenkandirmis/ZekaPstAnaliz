@@ -24,7 +24,8 @@ namespace MailBackupSystem
 
         public void Islem(OutlookFolder folder, string recordFolderName)
         {
-            
+            Console.WriteLine(folder.Name);
+
             var klasorList = KlasorAl(folder);
             MailAl(folder, recordFolderName);
             if (klasorList != null)
@@ -44,22 +45,22 @@ namespace MailBackupSystem
 
         public void MailAl(OutlookFolder folder, string recordFolderName)
         {
-            
+
             foreach (var mail in folder.EnumerateOutlookItem())
             {
                 var path = Path.Combine(recordFolderName, mail.GetHashCode().ToString());
-           
+
                 ValidFolder(recordFolderName);
-               // MailYazdir(mail, path);
+                // MailYazdir(mail, path);
                 MailKaydet(mail, recordFolderName);
-              //  EklentiKaydet(mail, path);
+                //  EklentiKaydet(mail, path);
             }
         }
 
         public void MailYazdir(OutlookItem outlookItem, string recordFolderName)
         {
             var icerik = $@"{outlookItem.DeliveryTime}ß{outlookItem.SenderEmailAddress}ß{outlookItem.Subject}ß{outlookItem.DisplayName}ß{outlookItem.DisplayTo}ß{outlookItem.DisplayBcc}ß{outlookItem.DisplayCc}ß{outlookItem.Body}";
-            
+
             using (StreamWriter sw = File.AppendText(recordFolderName + @"\content.txt"))
             {
                 sw.WriteLine(icerik);
@@ -68,6 +69,7 @@ namespace MailBackupSystem
 
         public void MailKaydet(OutlookItem outlookItem, string recordFolderName)
         {
+
             try
             {
                 outlookItem.SaveToStream(recordFolderName + @"\" + outlookItem.GetHashCode() + ".msg");
