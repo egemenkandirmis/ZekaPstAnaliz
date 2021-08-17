@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+
 namespace MailBackupSystem
 {
     public class MailHelper
@@ -18,6 +19,8 @@ namespace MailBackupSystem
             var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "").ToList();
             foreach (var sf in firstSubFolder)
             {
+                //if (sf.Name.ToLower().Contains("gelen"))
+                    //continue;
                 Islem(sf, Path.Combine(recordPath, sf.Name));
             }
         }
@@ -64,6 +67,18 @@ namespace MailBackupSystem
                     continue;
                 SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.gov", "govBcc");
                 SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.org", "orgBcc");
+
+                if (mail.SenderEmailAddress == null || mail.SenderName == null)
+                    continue;
+                SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.gov", "govGonderilen");
+                SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.org", "orgGonderilen");
+
+
+
+
+
+
+
 
             }
         }
