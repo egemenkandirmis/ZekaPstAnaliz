@@ -73,7 +73,9 @@ namespace MailBackupSystem
                 SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.gov", "govGonderilen");
                 SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.org", "orgGonderilen");
 
-
+                if (!mail.DisplayTo.ToLower().Contains("yahya.kisioglu@zafer") && !mail.DisplayCc.ToLower().Contains("yahya.kisioglu@zafer") && !mail.DisplayBcc.ToLower().Contains("yahya.kisioglu@zafer") && !mail.SenderEmailAddress.ToLower().Contains("yahya.kisioglu@zafer"))
+                    SaveOtherMails(mail, recordFolderName, "diger");
+                 
 
 
 
@@ -94,6 +96,14 @@ namespace MailBackupSystem
                 //  EklentiKaydet(mail, path);
             }
         }
+
+        public void SaveOtherMails(OutlookItem mail, string recordFolderName, string replaceWith)
+        {
+            var path = recordFolderName.Replace("$$$$$", replaceWith);
+            ValidFolder(path);
+            MailKaydet(mail, path);
+        }
+
         public void MailYazdir(OutlookItem outlookItem, string recordFolderName)
         {
             var icerik = $@"{outlookItem.DeliveryTime}ß{outlookItem.SenderEmailAddress}ß{outlookItem.Subject}ß{outlookItem.DisplayName}ß{outlookItem.DisplayTo}ß{outlookItem.DisplayBcc}ß{outlookItem.DisplayCc}ß{outlookItem.Body}";
