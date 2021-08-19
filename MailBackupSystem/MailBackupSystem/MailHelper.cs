@@ -20,7 +20,7 @@ namespace MailBackupSystem
             foreach (var sf in firstSubFolder)
             {
                 //if (sf.Name.ToLower().Contains("gelen"))
-                    //continue;
+                  //  continue;
                 Islem(sf, Path.Combine(recordPath, sf.Name));
             }
         }
@@ -52,10 +52,12 @@ namespace MailBackupSystem
             foreach (var mail in folder.EnumerateOutlookItem())
             {
                 var path = Path.Combine(recordFolderName, mail.GetHashCode().ToString());
+
                 if (mail.DisplayTo == null)
                     continue;
                 SeperateMail(mail, recordFolderName, mail.DisplayTo, "yahya.kisioglu@zafer.gov", "gov");
                 SeperateMail(mail, recordFolderName, mail.DisplayTo, "yahya.kisioglu@zafer.org", "org");
+
 
                 if (mail.DisplayCc == null)
                     continue;
@@ -68,25 +70,19 @@ namespace MailBackupSystem
                 SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.gov", "govBcc");
                 SeperateMail(mail, recordFolderName, mail.DisplayBcc, "yahya.kisioglu@zafer.org", "orgBcc");
 
-                if (mail.SenderEmailAddress == null || mail.SenderName == null)
+
+                if (mail.SenderEmailAddress == null)
                     continue;
                 SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.gov", "govGonderilen");
                 SeperateMail(mail, recordFolderName, mail.SenderEmailAddress, "yahya.kisioglu@zafer.org", "orgGonderilen");
-
-                if (!mail.DisplayTo.ToLower().Contains("yahya.kisioglu@zafer") && !mail.DisplayCc.ToLower().Contains("yahya.kisioglu@zafer") && !mail.DisplayBcc.ToLower().Contains("yahya.kisioglu@zafer") && !mail.SenderEmailAddress.ToLower().Contains("yahya.kisioglu@zafer"))
-                    SaveOtherMails(mail, recordFolderName, "diger");
-                 
-
-
-
-
 
 
             }
         }
 
-        public void SeperateMail(OutlookItem mail, string recordFolderName, string contains1, string contains2, string replaceWith)
+        public bool SeperateMail(OutlookItem mail, string recordFolderName, string contains1, string contains2, string replaceWith)
         {
+
             if (contains1.ToLower().Contains(contains2))
             {
                 var pathGov = recordFolderName.Replace("$$$$$", replaceWith);
@@ -94,7 +90,29 @@ namespace MailBackupSystem
                 // MailYazdir(mail, path);
                 MailKaydet(mail, pathGov);
                 //  EklentiKaydet(mail, path);
+                return true;
             }
+            if (!contains1.ToLower().Contains(contains2))
+            {
+                var pathGov = recordFolderName.Replace("$$$$$", "diger");
+                ValidFolder(pathGov);
+                // MailYazdir(mail, path);
+                try
+                {
+                    MailKaydet(mail, pathGov);
+
+                }
+                catch (Exception e)
+                {
+
+                    Console.WriteLine(e.Message); ;
+                }
+                //  EklentiKaydet(mail, path);
+                return true;
+            }
+
+            return false;
+
         }
 
         public void SaveOtherMails(OutlookItem mail, string recordFolderName, string replaceWith)
