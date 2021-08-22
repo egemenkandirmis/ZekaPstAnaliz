@@ -11,19 +11,25 @@ namespace MailBackupSystem
     public class MailHelper
     {
         private OutlookFile outlookFile;
+        private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
+        ExcelHelper excelHelper;
+        private static int rowIndex = 1;
+        public List<string> icerik = new List<string>();
 
 
         public MailHelper(string pstPath, string recordPath)
         {
+            excelHelper = new ExcelHelper();
             outlookFile = new OutlookFile(pstPath);
             var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "").ToList();
             foreach (var sf in firstSubFolder)
             {
                 //if (sf.Name.ToLower().Contains("gelen"))
-                  //  continue;
+                //  continue;
                 Islem(sf, Path.Combine(recordPath, sf.Name));
             }
         }
+
 
         public void Islem(OutlookFolder folder, string recordFolderName)
         {
@@ -122,28 +128,80 @@ namespace MailBackupSystem
             MailKaydet(mail, path);
         }
 
-        public void MailYazdir(OutlookItem outlookItem, string recordFolderName)
-        {
-            var icerik = $@"{outlookItem.DeliveryTime}ß{outlookItem.SenderEmailAddress}ß{outlookItem.Subject}ß{outlookItem.DisplayName}ß{outlookItem.DisplayTo}ß{outlookItem.DisplayBcc}ß{outlookItem.DisplayCc}ß{outlookItem.Body}";
-
-            using (StreamWriter sw = File.AppendText(recordFolderName + @"\content.txt"))
-            {
-                sw.WriteLine(icerik);
-            }
-        }
 
         public void MailKaydet(OutlookItem outlookItem, string recordFolderName)
         {
+            if (outlookItem.DeliveryTime != null)
+                icerik.Add(outlookItem.DeliveryTime.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.SenderEmailAddress != null)
+                icerik.Add(outlookItem.SenderEmailAddress.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.DisplayTo != null)
+                icerik.Add(outlookItem.DisplayTo.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.DisplayCc != null)
+                icerik.Add(outlookItem.DisplayCc.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.DisplayBcc != null)
+                icerik.Add(outlookItem.DisplayBcc.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.Subject != null)
+                icerik.Add(outlookItem.Subject.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem.Body != null)
+                icerik.Add(outlookItem.Body.ToString());
+            else
+            {
+                icerik.Add("N/A");
+            }
+
+            if (outlookItem != null)
+                icerik.Add(recordFolderName + @"\" + outlookItem.GetHashCode());
+            else
+            {
+                icerik.Add("N/A");
+            }
 
             try
             {
                 outlookItem.SaveToStream(recordFolderName + @"\" + outlookItem.GetHashCode() + ".msg");
             }
+
             catch (Exception e)
             {
 
                 Console.WriteLine(e.Message);
             }
+            excelHelper.CreateData(icerik, rowIndex);
+            excelHelper.WriteExcel(excelPath);
+            rowIndex++;
+            icerik.Clear();
+
         }
 
         public void EklentiKaydet(OutlookItem outlookItem, string recordFolderName)
