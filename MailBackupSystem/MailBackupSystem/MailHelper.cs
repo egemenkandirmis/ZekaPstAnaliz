@@ -3,8 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-
+using Newtonsoft.Json;
 
 namespace MailBackupSystem
 {
@@ -12,6 +11,7 @@ namespace MailBackupSystem
     {
         private OutlookFile outlookFile;
         private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
+        private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs\";
         ExcelHelper excelHelper;
         private static int rowIndex = 1;
         public List<string> icerik = new List<string>();
@@ -93,16 +93,17 @@ namespace MailBackupSystem
             {
                 var pathGov = recordFolderName.Replace("$$$$$", replaceWith);
                 ValidFolder(pathGov);
-                // MailYazdir(mail, path);
+                ValidFolder(txtPath);
+                MailYazdir(mail, txtPath, recordFolderName);
                 MailKaydet(mail, pathGov);
-                //  EklentiKaydet(mail, path);
                 return true;
             }
             if (!contains1.ToLower().Contains(contains2))
             {
                 var pathGov = recordFolderName.Replace("$$$$$", "diger");
+                ValidFolder(txtPath);
                 ValidFolder(pathGov);
-                // MailYazdir(mail, path);
+                MailYazdir(mail, txtPath, recordFolderName);
                 try
                 {
                     MailKaydet(mail, pathGov);
@@ -113,7 +114,7 @@ namespace MailBackupSystem
 
                     Console.WriteLine(e.Message); ;
                 }
-                //  EklentiKaydet(mail, path);
+
                 return true;
             }
 
@@ -125,67 +126,37 @@ namespace MailBackupSystem
         {
             var path = recordFolderName.Replace("$$$$$", replaceWith);
             ValidFolder(path);
+            ValidFolder(txtPath);
             MailKaydet(mail, path);
         }
 
+        public void MailYazdir(OutlookItem outlookItem, string txtPath, string recordFolderName)
+        {
+            Mail mail = new Mail
+            {
+                Body = outlookItem.Body,
+                DeliveryTime = outlookItem.DeliveryTime,
+                DisplayBcc = outlookItem.DisplayBcc,
+                DisplayCc = outlookItem.DisplayCc,
+                DisplayTo = outlookItem.DisplayTo,
+                SenderEmailAddress = outlookItem.SenderEmailAddress,
+                Subject = outlookItem.Subject,
+                FilePath = recordFolderName + @"\" + outlookItem.GetHashCode()
+            };
+
+            // serialize JSON to a string and then write string to a file
+            File.AppendAllText(txtPath+@"\output.txt", JsonConvert.SerializeObject(mail));
+
+            // serialize JSON directly to a file
+            using (StreamWriter file = File.AppendText(txtPath+@"\output.txt"))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, mail);
+            }
+        }
 
         public void MailKaydet(OutlookItem outlookItem, string recordFolderName)
         {
-            if (outlookItem.DeliveryTime != null)
-                icerik.Add(outlookItem.DeliveryTime.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.SenderEmailAddress != null)
-                icerik.Add(outlookItem.SenderEmailAddress.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.DisplayTo != null)
-                icerik.Add(outlookItem.DisplayTo.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.DisplayCc != null)
-                icerik.Add(outlookItem.DisplayCc.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.DisplayBcc != null)
-                icerik.Add(outlookItem.DisplayBcc.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.Subject != null)
-                icerik.Add(outlookItem.Subject.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem.Body != null)
-                icerik.Add(outlookItem.Body.ToString());
-            else
-            {
-                icerik.Add("N/A");
-            }
-
-            if (outlookItem != null)
-                icerik.Add(recordFolderName + @"\" + outlookItem.GetHashCode());
-            else
-            {
-                icerik.Add("N/A");
-            }
 
             try
             {
@@ -197,10 +168,7 @@ namespace MailBackupSystem
 
                 Console.WriteLine(e.Message);
             }
-            excelHelper.CreateData(icerik, rowIndex);
-            excelHelper.WriteExcel(excelPath);
-            rowIndex++;
-            icerik.Clear();
+
 
         }
 

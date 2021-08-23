@@ -5,6 +5,8 @@ using NPOI.XSSF.UserModel;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.IO;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace MailBackupSystem
 {
@@ -13,7 +15,7 @@ namespace MailBackupSystem
         ISheet sheet;
         XSSFWorkbook workbook;
         IRow CurrentRow;
-        int counter = 0;
+        static int rowCounter = 1;
         public ExcelHelper()
         {
             workbook = new XSSFWorkbook();
@@ -24,37 +26,54 @@ namespace MailBackupSystem
             //Create The Actual Cells
             CreateCell(HeaderRow, 0, "Tarih");
             CreateCell(HeaderRow, 1, "Gönderen");
-            CreateCell(HeaderRow, 2, "Alıcı");
-            CreateCell(HeaderRow, 3, "Cc");
+            CreateCell(HeaderRow, 2, "Konu");
+            CreateCell(HeaderRow, 3, "Alıcı");
             CreateCell(HeaderRow, 4, "Bcc");
-            CreateCell(HeaderRow, 5, "Konu");
+            CreateCell(HeaderRow, 5, "Cc");
             CreateCell(HeaderRow, 6, "İçerik");
             CreateCell(HeaderRow, 7, "Dizin");
+            //WriteExcel(@"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\");
         }
 
-        public void CreateData(List<string> icerik ,int rowIndex)
+        public void CreateData(IList<Mail> mails, int rowIndex)
         {
-
             CurrentRow = sheet.CreateRow(rowIndex);
-            counter = 0;
-            foreach (var item in icerik)
+            foreach (var mail in mails)
             {
-                CreateCell(CurrentRow, counter, item.ToString());
-                counter++;
+                Console.WriteLine(mail.Subject);
+                CreateCell(CurrentRow, 0, mail.DeliveryTime.ToString());
+                CreateCell(CurrentRow, 1, mail.SenderEmailAddress);
+                CreateCell(CurrentRow, 2, mail.Subject);
+                CreateCell(CurrentRow, 3, mail.DisplayTo);
+                CreateCell(CurrentRow, 4, mail.DisplayBcc);
+                CreateCell(CurrentRow, 5, mail.DisplayCc);
+                CreateCell(CurrentRow, 6, mail.Body);
+                CreateCell(CurrentRow, 7, mail.FilePath);
             }
-            counter = 0;
-            AutoSize();
 
         }
 
-        public void AutoSize()
+        public void ReadFromTxt(string txtPath, string excelPath)
         {
-            // This will be used to calculate the merge area
-            int lastColumNum = sheet.GetRow(0).LastCellNum;
-            for (int i = 0; i < 2; i++)
+
+            var file = File.ReadAllText(txtPath + @"\output.txt");
+            IList<Mail> mails = new List<Mail>();
+            JsonTextReader reader = new JsonTextReader(new StringReader(file));
+            reader.SupportMultipleContent = true;
+            while (true)
             {
-                sheet.AutoSizeColumn(i);
-                GC.Collect();
+                if (!reader.Read())
+                {
+                    break;
+                }
+
+                JsonSerializer serializer = new JsonSerializer();
+                Mail mail = serializer.Deserialize<Mail>(reader);
+
+                mails.Add(mail);
+                CreateData(mails, rowCounter);
+                rowCounter++;
+                WriteExcel(excelPath);
             }
         }
 
@@ -73,9 +92,11 @@ namespace MailBackupSystem
         private static void CreateCell(IRow CurrentRow, int CellIndex, string Value)
         {
             ICell Cell = CurrentRow.CreateCell(CellIndex);
-            if(Value.Length <= 32700)
+            if (Value == null)
+                Value = "";
+            if (Value.Length <= 32700)
                 Cell.SetCellValue(Value);
-            if(Value.Length > 32700)
+            if (Value.Length > 32700)
             {
                 var temp = Value.Substring(0, 32000);
                 Cell.SetCellValue(temp);

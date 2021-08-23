@@ -14,7 +14,7 @@ namespace MailBackupSystem
     class Program
     {
 
-        private static string path = @"C:\Users\kandi\Desktop\SamplePST\$$$$$\";
+        private static string path = @"C:\Users\kandi\Desktop\SamplePST\Mail\$$$$$\";
         //private static string path = @"C:\Users\kandi\Desktop\SamplePST\Export\";
         private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\yahya.kisioglu.pst";
         private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
@@ -22,7 +22,9 @@ namespace MailBackupSystem
         //private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\ege.pst";
         static void Main(string[] args)
         {
-            MailHelper mailHelper = new MailHelper(pstPath,path);
+            //MailHelper mailHelper = new MailHelper(pstPath,path);
+            ExcelHelper excelHelper = new ExcelHelper();
+            excelHelper.ReadFromTxt(@"C:\Users\kandi\Desktop\SamplePST\TxtDocs\", excelPath);
         }
 
     }
