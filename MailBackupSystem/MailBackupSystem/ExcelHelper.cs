@@ -18,6 +18,7 @@ namespace MailBackupSystem
         static int rowCounter = 1;
         public ExcelHelper()
         {
+            Console.WriteLine("EXCEL HELPER");
             workbook = new XSSFWorkbook();
 
             sheet = workbook.CreateSheet("Report");
@@ -35,12 +36,18 @@ namespace MailBackupSystem
             //WriteExcel(@"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\");
         }
 
-        public void CreateData(IList<Mail> mails, int rowIndex)
+        public void ReadFromTxt(string txtPath, string excelPath)
         {
-            CurrentRow = sheet.CreateRow(rowIndex);
-            foreach (var mail in mails)
+            if (!Directory.Exists(excelPath))
+                Directory.CreateDirectory(excelPath);
+
+
+            CurrentRow = sheet.CreateRow(rowCounter);
+
+            foreach (var item in File.ReadAllLines(txtPath + @"\output.txt"))
             {
-                Console.WriteLine(mail.Subject);
+                var mail = JsonConvert.DeserializeObject<Mail>(item);
+
                 CreateCell(CurrentRow, 0, mail.DeliveryTime.ToString());
                 CreateCell(CurrentRow, 1, mail.SenderEmailAddress);
                 CreateCell(CurrentRow, 2, mail.Subject);
@@ -49,44 +56,18 @@ namespace MailBackupSystem
                 CreateCell(CurrentRow, 5, mail.DisplayCc);
                 CreateCell(CurrentRow, 6, mail.Body);
                 CreateCell(CurrentRow, 7, mail.FilePath);
-            }
-
-        }
-
-        public void ReadFromTxt(string txtPath, string excelPath)
-        {
-
-            var file = File.ReadAllText(txtPath + @"\output.txt");
-            IList<Mail> mails = new List<Mail>();
-            JsonTextReader reader = new JsonTextReader(new StringReader(file));
-            reader.SupportMultipleContent = true;
-            while (true)
-            {
-                if (!reader.Read())
-                {
-                    break;
-                }
-
-                JsonSerializer serializer = new JsonSerializer();
-                Mail mail = serializer.Deserialize<Mail>(reader);
-
-                mails.Add(mail);
-                CreateData(mails, rowCounter);
                 rowCounter++;
-                WriteExcel(excelPath);
+                CurrentRow = sheet.CreateRow(rowCounter);
             }
-        }
-
-        public void WriteExcel(string excelPath)
-        {
-            if (!Directory.Exists(excelPath))
-                Directory.CreateDirectory(excelPath);
+            Console.WriteLine("Toplam mail sayısı: " + rowCounter);
 
             using (var fileData = new FileStream(excelPath + @"\MailReport.xlsx", FileMode.Create))
             {
                 workbook.Write(fileData);
             }
         }
+
+
 
 
         private static void CreateCell(IRow CurrentRow, int CellIndex, string Value)

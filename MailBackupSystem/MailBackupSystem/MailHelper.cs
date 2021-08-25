@@ -11,17 +11,16 @@ namespace MailBackupSystem
     {
         private OutlookFile outlookFile;
         private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
-        private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs\";
-        ExcelHelper excelHelper;
-        private static int rowIndex = 1;
+        private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs";
         public List<string> icerik = new List<string>();
 
 
         public MailHelper(string pstPath, string recordPath)
         {
-            excelHelper = new ExcelHelper();
+            Directory.CreateDirectory(txtPath);
             outlookFile = new OutlookFile(pstPath);
             var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "").ToList();
+            var x = outlookFile.Folders.ToList();
             foreach (var sf in firstSubFolder)
             {
                 //if (sf.Name.ToLower().Contains("gelen"))
@@ -94,7 +93,7 @@ namespace MailBackupSystem
                 var pathGov = recordFolderName.Replace("$$$$$", replaceWith);
                 ValidFolder(pathGov);
                 ValidFolder(txtPath);
-                MailYazdir(mail, txtPath, recordFolderName);
+                MailYazdir(mail, txtPath, pathGov);
                 MailKaydet(mail, pathGov);
                 return true;
             }
@@ -103,7 +102,7 @@ namespace MailBackupSystem
                 var pathGov = recordFolderName.Replace("$$$$$", "diger");
                 ValidFolder(txtPath);
                 ValidFolder(pathGov);
-                MailYazdir(mail, txtPath, recordFolderName);
+                MailYazdir(mail, txtPath, pathGov);
                 try
                 {
                     MailKaydet(mail, pathGov);
@@ -141,17 +140,25 @@ namespace MailBackupSystem
                 DisplayTo = outlookItem.DisplayTo,
                 SenderEmailAddress = outlookItem.SenderEmailAddress,
                 Subject = outlookItem.Subject,
-                FilePath = recordFolderName + @"\" + outlookItem.GetHashCode()
+                FilePath = @"\\"+recordFolderName + @"\" + outlookItem.GetHashCode()+".msg"
             };
 
+            var str = Newtonsoft.Json.JsonConvert.SerializeObject(mail);
+
+            //File.Create(txtPath + @"output.txt");
+
+
+            //File.AppendAllText(txtPath + @"\output.txt", "[");
+         
+
             // serialize JSON to a string and then write string to a file
-            File.AppendAllText(txtPath+@"\output.txt", JsonConvert.SerializeObject(mail));
+            //File.AppendAllText(txtPath + @"\output.txt", JsonConvert.SerializeObject(mail));
 
             // serialize JSON directly to a file
-            using (StreamWriter file = File.AppendText(txtPath+@"\output.txt"))
+            using (StreamWriter file = File.AppendText(txtPath + @"\output.txt"))
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, mail);
+                file.WriteLine(str);
+                //File.AppendAllText(txtPath + @"\output.txt", str + ",");
             }
         }
 
