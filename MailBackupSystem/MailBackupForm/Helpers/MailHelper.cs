@@ -4,21 +4,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using MailBackupForm.Properties;
 
-namespace MailBackupSystem
+namespace MailBackupForm.Helpers
 {
     public class MailHelper
     {
         private OutlookFile outlookFile;
-        private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
-        private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs";
         public List<string> icerik = new List<string>();
+        string txtPath = @"";
 
 
-
-        public MailHelper(string pstPath, string recordPath)
+        public MailHelper(string pstPath, string recordPath, string txtPath)
         {
             Directory.CreateDirectory(txtPath);
+            this.txtPath = txtPath;
             outlookFile = new OutlookFile(pstPath);
             var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "").ToList();
             var x = outlookFile.Folders.ToList();
@@ -168,7 +168,9 @@ namespace MailBackupSystem
 
             try
             {
+
                 outlookItem.SaveToStream(recordFolderName + @"\" + outlookItem.GetHashCode() + ".msg");
+                
             }
 
             catch (Exception e)

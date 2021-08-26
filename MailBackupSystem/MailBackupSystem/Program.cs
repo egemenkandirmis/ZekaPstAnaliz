@@ -15,13 +15,17 @@ namespace MailBackupSystem
     {
 
         
-        private static string path = @"C:\Users\kandi\Desktop\SamplePST\Mail\$$$$$\";
-        //private static string path = @"C:\Users\kandi\Desktop\SamplePST\Export\";
-        private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\archive.pst";
-        private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs\";
-        private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
-        //private static static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\archive.pst";
-        //private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\ege.pst";
+        //private static string path = @"C:\Users\kandi\Desktop\SamplePST\Mail\$$$$$\";
+        private static string path = @"";
+
+        //private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\archive.pst";
+        private static string pstPath = @"";
+        //private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs\";
+        private static string txtPath = @"";
+        //private static string excelPath = @"C:\Users\kandi\Desktop\SamplePST\ExcelDocs\";
+        private static string excelPath = @"";
+
+
         static void Main(string[] args)
         {
             DateTime start = DateTime.Now;
@@ -29,7 +33,7 @@ namespace MailBackupSystem
             Clear();
             MailHelper mailHelper = new MailHelper(pstPath, path);
             ExcelHelper excelHelper = new ExcelHelper();
-            excelHelper.ReadFromTxt(@"C:\Users\kandi\Desktop\SamplePST\TxtDocs\", excelPath);
+            excelHelper.ReadFromTxt(txtPath, excelPath);
             DateTime end = DateTime.Now;
             Console.WriteLine("Bitiş: " + end.ToString());
             var fark = end.Subtract(start).TotalMinutes;
@@ -43,16 +47,26 @@ namespace MailBackupSystem
                 Directory.Delete(excelPath,true);
 
 
-            if (Directory.Exists(path.Split("$")[0]))
-                Directory.Delete(path.Split("$")[0],true);
+            if (Directory.Exists(path.Split(@"$")[0]))
+                Directory.Delete(path.Split(@"$")[0],true);
 
 
             if (Directory.Exists(txtPath))
-                Directory.Delete(txtPath,true);
+                Directory.Delete(txtPath,true); 
+        }
 
-
-            
-
+        public static void SetPstFileName(string pstName)
+        {
+            pstPath = pstName;
+        }
+        public static void SetRootFolderName(string folderName)
+        {
+            var fullFolderName = folderName + @"\Mail\$$$$$";
+            var fullTxtFolderName = folderName + @"\Mail\TxtDocs";
+            var fullExcelFolderName = folderName + @"\Mail\ExcelDocs";
+            path = fullFolderName;
+            excelPath = fullExcelFolderName;
+            txtPath = fullTxtFolderName;
         }
 
 
