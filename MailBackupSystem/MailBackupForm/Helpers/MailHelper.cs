@@ -20,7 +20,7 @@ namespace MailBackupForm.Helpers
             Directory.CreateDirectory(txtPath);
             this.txtPath = txtPath;
             outlookFile = new OutlookFile(pstPath);
-            var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "").ToList();
+            var firstSubFolder = outlookFile.GetSubFolders().Where(c => c.ContainerClass == "" || c.ContainerClass == "IPF.Note").ToList();
             var x = outlookFile.Folders.ToList();
             foreach (var sf in firstSubFolder)
             {

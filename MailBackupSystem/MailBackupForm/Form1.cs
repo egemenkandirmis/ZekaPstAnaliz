@@ -19,7 +19,8 @@ namespace MailBackupForm
     {
         //private static string path = @"C:\Users\kandi\Desktop\SamplePST\Mail\$$$$$\";
         private static string path = @"";
-
+        private string rootPath = "";
+        private string rootFolder = "";
         //private static string pstPath = @"C:\Users\kandi\Desktop\SamplePST\archive.pst";
         private static string pstPath = @"";
         //private static string txtPath = @"C:\Users\kandi\Desktop\SamplePST\TxtDocs\";
@@ -28,7 +29,9 @@ namespace MailBackupForm
         private static string excelPath = @"";
 
         private static int indexCounter = 0;
-        private int mailCount;
+        private static int mailCount;
+
+        WebBrowser webView;
 
 
         DateTime start;
@@ -36,12 +39,13 @@ namespace MailBackupForm
         public Form1()
         {
             InitializeComponent();
-            //btnExcel.Enabled = false;
-           
+            btnExcel.Enabled = false;
+
             if (path == "" || pstPath == "")
             {
                 btnAyikla.Enabled = false;
             }
+            
         }
 
         private void btnOpenPst_Click(object sender, EventArgs e)
@@ -49,7 +53,7 @@ namespace MailBackupForm
             openFileDialog1.ShowDialog();
             pstPath = openFileDialog1.FileName;
             textBox1.Text = pstPath;
-            //btnExcel.Enabled = false;
+            btnExcel.Enabled = false;
         }
 
         private void btnSelectFolder_Click(object sender, EventArgs e)
@@ -61,6 +65,8 @@ namespace MailBackupForm
             if (choice == DialogResult.Yes)
             {
                 var fullFolderName = folderName + @"\Mail\$$$$$";
+                rootPath = folderName + @"\Mail";
+                rootFolder = folderName;
                 var fullTxtFolderName = folderName + @"\Mail\TxtDocs";
                 var fullExcelFolderName = folderName + @"\Mail\ExcelDocs";
                 path = fullFolderName;
@@ -113,30 +119,34 @@ namespace MailBackupForm
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            webView = new WebBrowser();
+            tableLayoutPanel2.Controls.Add(webView, 1, 6);
+            webView.Dock = DockStyle.Fill;
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             start = DateTime.Now;
+            backgroundWorker1.ReportProgress(0);
             Clear();
             Thread.Sleep(100);
             backgroundWorker1.ReportProgress(0);
 
-            Console.WriteLine("Başlangıç: " + start.ToString());
+            Console.WriteLine("Başlangıç: " + start.ToShortTimeString());
 
 
             MailHelper mailHelper = new MailHelper(pstPath, path, txtPath);
-            Thread.Sleep(100);
+            Thread.Sleep(1000);
             backgroundWorker1.ReportProgress(0);
 
             ExcelHelper excelHelper = new ExcelHelper();
             excelHelper.ReadFromTxt(txtPath, excelPath);
-            Thread.Sleep(100);
+            Thread.Sleep(1500);
             backgroundWorker1.ReportProgress(0);
 
-            
+
             end = DateTime.Now;
-            Thread.Sleep(100);
+            Thread.Sleep(1000);
             backgroundWorker1.ReportProgress(0);
         }
 
@@ -144,7 +154,7 @@ namespace MailBackupForm
         {
             UpdateListBox(indexCounter);
             indexCounter++;
-            
+
         }
 
         private void UpdateListBox(int index)
@@ -152,18 +162,24 @@ namespace MailBackupForm
             switch (index)
             {
                 case 0:
-                    listBox1.Items.Add("Başlama saati: " + start.ToString());
-                    listBox1.Items.Add("Mailler ayıklanıyor..");
+                    listBox1.Items.Add("Klasörler hazırlanıyor...");
                     break;
                 case 1:
-                    listBox1.Items.Add("Mailler ayıklandı..");
-                    listBox1.Items.Add("Excel raporu oluşturuluyor..");
+                    listBox1.Items.Add("Başlama saati: " + start.ToShortTimeString());
+                    listBox1.Items.Add("Mailler ayıklanıyor...");
                     break;
                 case 2:
-                    listBox1.Items.Add("Excel raporu oluşturuldu..");
-                    listBox1.Items.Add("Toplam mail sayısı: " + mailCount);
-                    listBox1.Items.Add("Bitiş saati: " + start.ToString());
+                    listBox1.Items.Add("Mailler ayıklandı.");
+                    listBox1.Items.Add("Excel raporu oluşturuluyor...");
+                    break;
+                case 3:
+                    Console.WriteLine("helllooooo");
+                    Console.WriteLine(mailCount);
+                    listBox1.Items.Add("Excel raporu oluşturuldu.");
+                    listBox1.Items.Add("Toplam mail sayısı: " + mailCount.ToString());
+                    listBox1.Items.Add("Bitiş saati: " + start.ToShortTimeString());
                     var fark = end.Subtract(start).TotalMinutes;
+                    fark = Math.Round(fark, 2);
                     listBox1.Items.Add("Geçen süre: " + fark + " dakika");
                     break;
                 default:
@@ -171,9 +187,11 @@ namespace MailBackupForm
             }
         }
 
-        public void GetTotalMailCount(int count)
+        public void SetTotalMailCount(int count)
         {
+            Console.WriteLine("TOTAL MAİL: " + count);
             mailCount = count;
+            Console.WriteLine("TOTAL MAİL: " + mailCount);
         }
 
 
@@ -189,9 +207,73 @@ namespace MailBackupForm
 
         private void btnMsg_Click(object sender, EventArgs e)
         {
+
+            ListDirectory(treeView1, rootPath);
+
+
+
+
+            //OutlookItem outlookItem = new OutlookItem();
+            //openFileDialog1.ShowDialog();
+            //var a = openFileDialog1.FileName;
+            //outlookItem.LoadFromFile(a);
+            //tbGonderen.Text = outlookItem.SenderEmailAddress;
+            //tbAlici.Text = outlookItem.DisplayTo;
+            //tbTarih.Text = outlookItem.DeliveryTime.ToString();
+            //tbBcc.Text = outlookItem.DisplayBcc;
+            //tbCc.Text = outlookItem.DisplayCc;
+            //tbKonu.Text = outlookItem.Subject;
+            //richTextBoxİcerik.Text = outlookItem.Body;
+        }
+
+
+
+        private void ListDirectory(TreeView treeView, string path)
+        {
+            if (path == "")
+            {
+                MessageBox.Show("Lütfen Kayıt Yolunu Seçiniz.");
+                return;
+            }
+
+            treeView.Nodes.Clear();
+            var rootDirectoryInfo = new DirectoryInfo(path);
+            treeView.Nodes.Add(CreateDirectoryNode(rootDirectoryInfo));
+        }
+
+        private static TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo)
+        {
+            var directoryNode = new TreeNode(directoryInfo.Name);
+            foreach (var directory in directoryInfo.GetDirectories())
+                directoryNode.Nodes.Add(CreateDirectoryNode(directory));
+            foreach (var file in directoryInfo.GetFiles())
+                directoryNode.Nodes.Add(new TreeNode(file.Name));
+            return directoryNode;
+        }
+
+        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            
+            if (treeView1.SelectedNode == null)
+            {
+                return;
+            }
+            var txt = treeView1.SelectedNode.Text;
+            if (txt.Length < 4)
+            {
+                return;
+            }
+
+
+            if (txt.Substring(txt.Length - 4, 4) != ".msg")
+            {
+                return;
+            }
+
+
             OutlookItem outlookItem = new OutlookItem();
-            openFileDialog1.ShowDialog();
-            var a = openFileDialog1.FileName;
+
+            var a = rootFolder + @"\" + treeView1.SelectedNode.FullPath;
             outlookItem.LoadFromFile(a);
             tbGonderen.Text = outlookItem.SenderEmailAddress;
             tbAlici.Text = outlookItem.DisplayTo;
@@ -199,7 +281,19 @@ namespace MailBackupForm
             tbBcc.Text = outlookItem.DisplayBcc;
             tbCc.Text = outlookItem.DisplayCc;
             tbKonu.Text = outlookItem.Subject;
-            richTextBoxİcerik.Text = outlookItem.Body;
+           
+            if (outlookItem.BodyHtml != null)
+                webView.DocumentText = outlookItem.BodyHtml;
+            if (outlookItem.BodyHtml == null)
+                webView.DocumentText = "Mail İçeriği Görüntülenemiyor";
+
+
+
+        }
+
+        private void tableLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

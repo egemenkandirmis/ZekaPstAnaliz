@@ -45,7 +45,6 @@ namespace MailBackupForm.Helpers
 
 
             CurrentRow = sheet.CreateRow(rowCounter);
-
             foreach (var item in File.ReadAllLines(txtPath + @"\output.txt"))
             {
 
@@ -62,7 +61,8 @@ namespace MailBackupForm.Helpers
                 rowCounter++;
                 CurrentRow = sheet.CreateRow(rowCounter);
             }
-            Console.WriteLine("Toplam mail sayısı: " + rowCounter);
+            //Console.WriteLine("Toplam mail sayısı: " + rowCounter);
+            form.SetTotalMailCount(rowCounter);
 
             using (var fileData = new FileStream(excelPath + @"\MailReport.xlsx", FileMode.Create))
             {
